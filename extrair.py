@@ -1,12 +1,13 @@
 # coding=utf-8
 #
-# Arquivo responsável por extrair palavras e seus tipos do wiktionary                                    
-# Após feita a extração os dados serão utilizados para criar o POS Tagger                                
-# Utilizado no spaCy                                                                                     
-#                                                                                                        
-# Referência: http://www.clips.ua.ac.be/pages/using-wiktionary-to-build-an-italian-part-of-speech-tagger                                                                         #
-# Autor: Renato Aguiar                                                                                   
-# 24/04/2017                                                                                             
+# Arquivo responsável por extrair palavras e seus tipos do wiktionary
+# Após feita a extração os dados serão utilizados para criar o POS Tagger
+# Utilizado no spaCy
+#
+# Referência:
+# http://www.clips.ua.ac.be/pages/using-wiktionary-to-build-an-italian-part-of-speech-tagger
+# Autor: Renato Aguiar
+# 24/04/2017
 #
 
 
@@ -20,7 +21,7 @@ from spacy.gold import GoldParse
 from pathlib import Path
 import random
  
-## Declaração de variáveis
+# Declaração de variáveis
 
 def extrair():
     url = "http://en.wiktionary.org/wiki/Index:Portuguese/"
@@ -49,7 +50,7 @@ def extrair():
                         arquivo.write(palavra + "-")
                         arquivo.write(tagger)
                         arquivo.write("\n")'''
-            except:
+            except :
                 pass
 
     # Declara um array para receber palavras e taggers
@@ -74,7 +75,7 @@ def formatarTagger(tagger):
         tagger = u'AV'
     elif tagger in ('ARTICLE', 'PRONOUN'):
         tagger = u'P'
-    
+
     return tagger
 
 
@@ -88,6 +89,8 @@ def criarPosSpaCy(data):
         ensure_dir(output_dir)
         ensure_dir(output_dir / "pos")
         ensure_dir(output_dir / "vocab")
+    
+    # Cria o mapa de tags
     vocab = Vocab(tag_map={'N': {'pos': 'NOUN'}, 
                            'V': {'pos': 'VERB'},
                            'A': {'pos': 'ADJ'},
@@ -95,13 +98,19 @@ def criarPosSpaCy(data):
                            'P': {'pos': 'PRON'},
                            'NUM': {'pos': 'NUM'}})
 
+    # Cria o tagger
     tagger = Tagger(vocab)
+
+    # Itera em todas as palavras que estão na tupla "palavras"
     for palavras, tags in data:
         doc = Doc(vocab, words=palavras)
         gold = GoldParse(doc, tags=tags)
         tagger.update(doc, gold)
     random.shuffle(data)
+
+    # Treina o model
     tagger.model.end_training()
+
     if output_dir is not None:
         tagger.model.dump(str(output_dir / 'pos' / 'model'))
         with (output_dir / 'vocab' / 'strings.json').open('w') as file_:
