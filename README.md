@@ -8,3 +8,9 @@ Deve ser utilizado o Python na versão 2.7, devido a utilização do módulo "pa
 ```
 pip install -r requirements.txt
 ```
+
+## Executar
+
+```
+python extrarir.py
+```
