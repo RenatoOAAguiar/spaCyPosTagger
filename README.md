@@ -12,5 +12,5 @@ pip install -r requirements.txt
 ## Executar
 
 ```
-python extrarir.py
+python extrair.py
 ```
