@@ -79,6 +79,7 @@ def tratarPontosSimbolos(palavra):
 
 def criarPosSpaCy(data):
     
+    # Setar diretorio onde está localizado o model
     output_dir = ''
 
     # Cria os diretorios
