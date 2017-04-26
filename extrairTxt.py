@@ -80,7 +80,7 @@ def tratarPontosSimbolos(palavra):
 def criarPosSpaCy(data):
     
     # Setar diretorio onde está localizado o model
-    output_dir = ''
+    output_dir = 'C:/bin/Anaconda3/Lib/site-packages/pt_model/pt_model-0.0.1'
 
     # Cria os diretorios
     if output_dir is not None:
