@@ -13,6 +13,7 @@ import glob
 import errno
 import os
 import random
+import json
 
 from spacy.vocab import Vocab
 from spacy.tagger import Tagger
@@ -30,6 +31,16 @@ pontos = ['(', ')', '.', ',', '?', '!', ';', ':', '-', '[', ']', '/', '\\']
 simbolos = ['$', '%']
 data = []
 englishWords = ['made', 'CHANGE', 'in', 'of', 'et', 'and', 'OK', 'Me', 'Too']
+excluidos = ['', 'NDAD', 'NHOR']
+__noun__ = ['NEST', 'NPRO', 'PROP', 'IN']
+__adj__ = ['ADJEST', 'PCP']
+__adv__ = ['PDEN', 'ADVEST', 'ADV-KS-REL', 'ADV-KS', 'ADVHOR']
+__det__ = ['ART', 'ARTEST', 'DET']
+__cconj__ = ['KC', 'KS']
+__propn__ = ['NPROP']
+__pron__ = ['PROADJ', 'PROPESS', 'PROSUB', 'PRO-KS-REL', 'PRO-KS']
+__sym__ = ['CUR']
+__num__ = ['NAP', 'NTEL', 'NDAT', 'NUMTEL', 'PRO-KS']
 
 def extrair():
     for file in glob.glob("*.txt"):
@@ -41,15 +52,15 @@ def extrair():
                         if word in execoes or palavra in englishWords:
                             continue
                         elif palavra != '':
-                            palavras.append(palavra)
                             tag = word.split("_")[1]
                             aux = tratarPontosSimbolos(palavra)
                             if aux is not None:
                                 tag = aux
                             tag = formatarTag(tag)
-                            tags.append(tag)
-                            if tag == '((':
-                                print(palavra)
+                            tag = formataTags(tag)
+                            if tag not in excluidos:
+                                palavras.append(palavra)
+                                tags.append(tag)
 
         except IOError as exc:
             if exc.errno != errno.EISDIR: 
@@ -59,6 +70,8 @@ def extrair():
     dados = []
     dados.append(palavras)
     dados.append(tags)
+    with open('../tags.json', 'w') as f:
+        json.dump(tags, f)
 
     # Adicionada o array em uma tupla
     tupla = tuple(dados)
@@ -67,6 +80,28 @@ def extrair():
     data.append(tupla)
     # print(data)
     criarPosSpaCy(data)
+
+def formataTags(tag):
+    if tag in __noun__:
+        return "N"
+    elif tag in __adj__:
+        return "ADJ"
+    elif tag in __adv__:
+        return "ADV"
+    elif tag in __det__:
+        return "A"
+    elif tag in __cconj__:
+        return "C"
+    elif tag in __propn__:
+        return "PR"
+    elif tag in __pron__:
+        return "P"
+    elif tag in __sym__:
+        return "SYM"
+    elif tag in __num__:
+        return "NUM"
+    else:
+        return tag
 
 def formatarTag(tag):
     return tag.replace('|+', '').replace('|', '').replace('!','').replace('[','').replace(']', '').replace('.', '').replace('/', '').replace('=', '').replace(',', '').replace('((','').replace('))','').replace('`','').replace("'", "").rstrip()
@@ -90,44 +125,21 @@ def criarPosSpaCy(data):
         ensure_dir(output_dir / "vocab")
     
     # Cria o mapa de tags
+    # Lembrar de não repetir o 'pos', se não o python da crash ao treinar model
+    
     vocab = Vocab(tag_map={'N': {'pos': 'NOUN'},
-                           'NEST': {'pos': 'NOUN'},
-                           'NPRO': {'pos': 'NOUN'},
-                           'PROP': {'pos': 'NOUN'},
-                           'IN': {'pos': 'NOUN'},
-                           'NPROP': {'pos': 'PROPN'},
+                           'PR': {'pos': 'PROPN'},
                            'V': {'pos': 'VERB'},
                            'ADJ': {'pos': 'ADJ'},
-                           'PCP': {'pos': 'ADJ'},
-                           'ADJEST': {'pos': 'ADJ'},
                            'ADV': {'pos': 'ADV'},
-                           'PDEN': {'pos': 'ADV'},
-                           'ADVEST': {'pos': 'ADV'},
-                           'ADV-KS-REL': {'pos': 'ADV'},
-                           'ADV-KS': {'pos': 'ADV'},
-                           'ADVHOR': {'pos': 'ADV'},
                            'PREP': {'pos': 'ADP'},
-                           'ART': {'pos': 'DET'},
-                           'ARTEST': {'pos': 'DET'},
-                           'KC': {'pos': 'CCONJ'},
-                           'KS': {'pos': 'CCONJ'},
-                           'PROADJ': {'pos': 'PRON'},
-                           'PRO-KS-REL': {'pos': 'PRON'},
-                           'PROPESS': {'pos': 'PRON'},
-                           'PROSUB': {'pos': 'PRON'},
-                           'PRO-KS': {'pos': 'PRON'},
+                           'A': {'pos': 'DET'},
+                           'C': {'pos': 'CCONJ'},
+                           'P': {'pos': 'PRON'},
                            'PUNCT': {'pos': 'PUNCT'},
-                           'CUR': {'pos' : 'SYM'},
                            'NUM': {'pos': 'NUM'},
-                           'NAP': {'pos': 'NUM'},
-                           'NTEL': {'pos': 'NUM'},
-                           'NDAT': {'pos': 'NUM'},
-                           'NUMTEL': {'pos': 'NUM'},
                            'VAUX': {'pos': 'AUX'},
-                           'SYM': {'pos': 'SYM'},
-                           '': {'pos': 'X'},
-                           'NDAD': {'pos': 'X'},
-                           'NHOR': {'pos': 'X'},})
+                           'SYM': {'pos': 'SYM'}})
 
 
     # Cria o tagger
